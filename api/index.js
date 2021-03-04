@@ -1,12 +1,11 @@
 const { ethers } = require("ethers");
 
-const { encodeCallData, enableCrossOrigin } = require("./utils.js");
-const { relay } = require("./biconomy.js");
+const { encodeCallData, enableCrossOrigin, getRelayer } = require("./utils.js");
+const { relay } = require("./relay.js");
 const {
   MULTISEND_ADDRESS,
   MULTISEND_ABI,
   PROXY_FACTORY_ADDRESS,
-  FEE_RECIPIENT,
   FEE,
 } = require("./constants");
 
@@ -19,8 +18,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const body = req.body;
-    const { to, transactions, params } = body;
+    const { to, transactions, params, method } = req.body;
 
     // verify destination address
     if (to !== PROXY_FACTORY_ADDRESS) {
@@ -34,29 +32,30 @@ module.exports = async (req, res) => {
     // verify call data
     const multiSend = new ethers.Contract(MULTISEND_ADDRESS, MULTISEND_ABI);
     const encodedCallData = encodeCallData(multiSend, transactions);
-
     if (encodedCallData !== data) {
-      throw new Error("Transaction data does not match signed data", data);
+      throw new Error("Transaction data does not match signed data");
     }
 
     // verify fee
-    //   const feeTx = transactions.find(
-    //     ({ to, data, value, operation }) =>
-    //       to === FEE_RECIPIENT && data === "0x" && value === FEE && operation === 0
-    //   );
-    //   if (!feeTx) {
-    //     throw new Error("No fee transaction found");
-    //   }
-
-    // remove raw transcations
-    delete body.transactions;
+    const relayer = getRelayer();
+    const feeTx = transactions.find(
+      ({ to, data, value, operation }) =>
+        to === relayer.address &&
+        data === "0x" &&
+        value === FEE &&
+        operation === 0
+    );
+    if (!feeTx) {
+      throw new Error("No fee transaction found");
+    }
 
     // relay transaction
-    const response = await relay(body);
+    const response = await relay(method, params);
 
-    // return tx hash
+    // return transaction details
     res.json(response);
   } catch (e) {
+    console.log(e.message);
     res.status(403);
     res.json({ error: e.message });
   }

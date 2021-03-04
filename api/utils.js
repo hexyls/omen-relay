@@ -1,4 +1,5 @@
 const { ethers } = require("ethers");
+const { PK, PROVIDER_URL } = require("./constants");
 
 const joinHexData = (hexData) => {
   return `0x${hexData
@@ -67,4 +68,10 @@ export const enableCrossOrigin = (res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "OPTIONS,POST");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+};
+
+export const getRelayer = () => {
+  // setup signer/provider
+  const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL);
+  return new ethers.Wallet(PK, provider);
 };
