@@ -1,62 +1,57 @@
-const { ethers } = require("ethers");
-
-const { encodeCallData, enableCrossOrigin, getRelayer } = require("./utils.js");
-const { relay } = require("./relay.js");
-const {
-  MULTISEND_ADDRESS,
-  MULTISEND_ABI,
-  PROXY_FACTORY_ADDRESS,
-  FEE,
-} = require("./constants");
+const { encodeCallData, enableCrossOrigin, getRelayer } = require('./utils.js')
+const { relay } = require('./relay.js')
+const { PROXY_FACTORY_ADDRESS, FEE } = require('./constants')
 
 module.exports = async (req, res) => {
   try {
-    enableCrossOrigin(res);
+    enableCrossOrigin(res)
 
-    if (req.method === "OPTIONS") {
-      res.status(200).end();
-      return;
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end()
     }
 
-    const { to, transactions, params, method } = req.body;
+    if (req.method === 'GET') {
+      return res.status(200).end()
+    }
+
+    if (req.method !== 'POST') {
+      throw new Error('Method not supported')
+    }
+
+    const { to, transactions, params, method } = req.body
 
     // verify destination address
     if (to !== PROXY_FACTORY_ADDRESS) {
-      throw new Error("Cannot relay to that address");
+      throw new Error('Cannot relay to that address')
     }
 
     // get call data
-    const execParamLength = 11;
-    const data = params.length === execParamLength ? params[3] : params[5];
+    const execParamLength = 11
+    const data = params.length === execParamLength ? params[3] : params[5]
 
     // verify call data
-    const multiSend = new ethers.Contract(MULTISEND_ADDRESS, MULTISEND_ABI);
-    const encodedCallData = encodeCallData(multiSend, transactions);
+    const encodedCallData = encodeCallData(transactions)
     if (encodedCallData !== data) {
-      throw new Error("Transaction data does not match signed data");
+      throw new Error('Transactions do not match call data')
     }
 
     // verify fee
-    const relayer = getRelayer();
+    const relayer = getRelayer()
     const feeTx = transactions.find(
-      ({ to, data, value, operation }) =>
-        to === relayer.address &&
-        data === "0x" &&
-        value === FEE &&
-        operation === 0
-    );
+      ({ to, data, value, operation }) => to === relayer.address && data === '0x' && value === FEE && operation === 0,
+    )
     if (!feeTx) {
-      throw new Error("No fee transaction found");
+      throw new Error('Fee payment not found')
     }
 
     // relay transaction
-    const response = await relay(method, params);
+    const response = await relay(method, params)
 
     // return transaction details
-    res.json(response);
+    res.json(response)
   } catch (e) {
-    console.log(e.message);
-    res.status(403);
-    res.json({ error: e.message });
+    console.log(e.message)
+    res.status(400)
+    res.json({ error: e.message })
   }
-};
+}
