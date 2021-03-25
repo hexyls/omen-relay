@@ -5,7 +5,7 @@ const { PROXY_FACTORY_ADDRESS, PROXY_FACTORY_ABI, GAS_LIMIT, GAS_PRICE } = requi
 
 const methods = ['createProxyAndExecTransaction', 'execTransaction']
 
-export const relay = async (method, params) => {
+const relay = async (method, params) => {
   if (!methods.includes(method)) {
     throw new Error('Relay: Method not allowed')
   }
@@ -32,4 +32,8 @@ export const relay = async (method, params) => {
 
   // execute transaction
   return proxyFactory[method](...params, options)
+}
+
+module.exports = {
+  relay,
 }

@@ -1,23 +1,15 @@
-const { encodeCallData, enableCrossOrigin, getRelayer } = require('./utils.js')
+const app = require('express')()
+const cors = require('cors')
+const bodyParser = require('body-parser')
+const { encodeCallData, getRelayer } = require('./utils.js')
 const { relay } = require('./relay.js')
 const { PROXY_FACTORY_ADDRESS, FEE } = require('./constants')
 
-module.exports = async (req, res) => {
+app.use(cors())
+app.use(bodyParser.json())
+
+app.post('/', async (req, res) => {
   try {
-    enableCrossOrigin(res)
-
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end()
-    }
-
-    if (req.method === 'GET') {
-      return res.status(200).end()
-    }
-
-    if (req.method !== 'POST') {
-      throw new Error('Method not supported')
-    }
-
     const { to, transactions, params, method } = req.body
 
     // verify destination address
@@ -54,4 +46,17 @@ module.exports = async (req, res) => {
     res.status(400)
     res.json({ error: e.message })
   }
-}
+})
+
+app.get('/info', async (req, res) => {
+  try {
+    const { address } = getRelayer()
+    res.json({ address, fee: FEE })
+  } catch (e) {
+    console.log(e.message)
+    res.status(400)
+    res.json({ error: e.message })
+  }
+})
+
+module.exports = app

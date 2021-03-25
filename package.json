@@ -4,10 +4,14 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "ethers": "^5.0.31",
+    "express": "^4.17.1",
     "node-fetch": "^2.6.1"
   },
   "scripts": {
-    "local": "vercel dev --listen 8000"
+    "local": "vercel dev --listen 8000",
+    "start": "node api/server.js"
   }
 }

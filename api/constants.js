@@ -1,13 +1,13 @@
-export const PK = ''
-export const PROVIDER_URL = 'https://rpc.xdaichain.com/'
-export const GAS_LIMIT = '3000000'
-export const GAS_PRICE = '1000000000' // 1 gwei
-export const FEE = '1000000000000000' // 0.001 xdai
+const PK = ''
+const PROVIDER_URL = 'https://rpc.xdaichain.com/'
+const GAS_LIMIT = '3000000'
+const GAS_PRICE = '1000000000' // 1 gwei
+const FEE = '1000000000000000' // 0.001 xdai
 
-export const MULTISEND_ADDRESS = '0x035000FC773f4a0e39FcdeD08A46aBBDBF196fd3'
-export const PROXY_FACTORY_ADDRESS = '0x7b9756f8A7f4208fE42FE8DE8a8CC5aA9A03f356'
+const MULTISEND_ADDRESS = '0x035000FC773f4a0e39FcdeD08A46aBBDBF196fd3'
+const PROXY_FACTORY_ADDRESS = '0x7b9756f8A7f4208fE42FE8DE8a8CC5aA9A03f356'
 
-export const MULTISEND_ABI = [
+const MULTISEND_ABI = [
   {
     constant: false,
     inputs: [
@@ -25,7 +25,7 @@ export const MULTISEND_ABI = [
   },
 ]
 
-export const PROXY_FACTORY_ABI = [
+const PROXY_FACTORY_ABI = [
   {
     type: 'function',
     stateMutability: 'payable',
@@ -71,3 +71,15 @@ export const PROXY_FACTORY_ABI = [
     constant: false,
   },
 ]
+
+module.exports = {
+  PK,
+  PROVIDER_URL,
+  GAS_LIMIT,
+  GAS_PRICE,
+  FEE,
+  MULTISEND_ADDRESS,
+  PROXY_FACTORY_ADDRESS,
+  MULTISEND_ABI,
+  PROXY_FACTORY_ABI,
+}

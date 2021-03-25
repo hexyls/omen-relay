@@ -46,7 +46,7 @@ const getHexDataLength = (hexData) => {
   return Math.ceil((hexData.startsWith('0x') ? hexData.length - 2 : hexData.length) / 2)
 }
 
-export const encodeCallData = (transactions) => {
+const encodeCallData = (transactions) => {
   const multiSend = new ethers.Contract(MULTISEND_ADDRESS, MULTISEND_ABI)
   return multiSend.interface.encodeFunctionData('multiSend', [
     joinHexData(
@@ -63,15 +63,13 @@ export const encodeCallData = (transactions) => {
   ])
 }
 
-export const enableCrossOrigin = (res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-}
-
-export const getRelayer = () => {
+const getRelayer = () => {
   // setup signer/provider
   const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL)
   return new ethers.Wallet(PK, provider)
+}
+
+module.exports = {
+  getRelayer,
+  encodeCallData,
 }
