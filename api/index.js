@@ -3,7 +3,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { encodeCallData, getRelayer } = require('./utils.js')
 const { relay } = require('./relay.js')
-const { PROXY_FACTORY_ADDRESS, FEE } = require('./constants')
+const { PROXY_FACTORY_ADDRESS, FEE, XDAI_TO_DAI_TOKEN_BRIDGE_ADDRESS } = require('./constants')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -32,7 +32,17 @@ app.post('/', async (req, res) => {
     const feeTx = transactions.find(
       ({ to, data, value, operation }) => to === relayer.address && data === '0x' && value === FEE && operation === 0,
     )
-    if (!feeTx) {
+
+    // check for withdraw tx
+    const withdrawSighash = '0x5d1e9307'
+    const withdrawTx = transactions.find(
+      ({ to, data, operation }) =>
+        to === XDAI_TO_DAI_TOKEN_BRIDGE_ADDRESS && data.startsWith(withdrawSighash) && operation === 0,
+    )
+    const isWithdrawTx = withdrawTx && transactions.length === 1
+
+    // fee must be paid unless it is a withdraw tx
+    if (!feeTx && !isWithdrawTx) {
       throw new Error('Fee payment not found')
     }
 
