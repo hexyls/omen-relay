@@ -10,6 +10,4 @@ Configure in api/constants.js:
 
 `GAS_LIMIT` - The gas limit the relayer will set per transaction
 
-`GAS_PRICE` - The gas price the relayer will set per transaction
-
-`FEE` - The fee the relayer will charge per transaction
+`GAS_PRICE` - The fallback gas price the relayer will set per transaction

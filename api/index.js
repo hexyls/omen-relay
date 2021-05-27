@@ -1,9 +1,10 @@
 const app = require('express')()
 const cors = require('cors')
 const bodyParser = require('body-parser')
-const { encodeCallData, getRelayer } = require('./utils.js')
-const { relay } = require('./relay.js')
-const { PROXY_FACTORY_ADDRESS, FEE, XDAI_TO_DAI_TOKEN_BRIDGE_ADDRESS } = require('./constants')
+const { encodeCallData, getRelayer } = require('./utils')
+const { estimateFee } = require('./estimate')
+const { relay } = require('./relay')
+const { PROXY_FACTORY_ADDRESS, FEE, XDAI_TO_DAI_TOKEN_BRIDGE_ADDRESS, GAS_LIMIT } = require('./constants')
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -28,9 +29,10 @@ app.post('/', async (req, res) => {
     }
 
     // verify fee
+    const { fee, options } = await estimateFee()
     const relayer = getRelayer()
     const feeTx = transactions.find(
-      ({ to, data, value, operation }) => to === relayer.address && data === '0x' && value === FEE && operation === 0,
+      ({ to, data, value, operation }) => to === relayer.address && data === '0x' && value === fee && operation === 0,
     )
 
     // check for withdraw tx
@@ -47,7 +49,7 @@ app.post('/', async (req, res) => {
     }
 
     // relay transaction
-    const response = await relay(method, params)
+    const response = await relay(method, params, options)
 
     // return transaction details
     res.json(response)
@@ -61,7 +63,8 @@ app.post('/', async (req, res) => {
 app.get('/info', async (req, res) => {
   try {
     const { address } = getRelayer()
-    res.json({ address, fee: FEE })
+    const { fee } = await estimateFee()
+    res.json({ address, fee })
   } catch (e) {
     console.log(e.message)
     res.status(400)
